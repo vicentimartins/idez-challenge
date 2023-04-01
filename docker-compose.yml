@@ -1,13 +1,12 @@
 version: '3'
 services:
-    idez:
+    laravel.test:
         build:
             context: ./vendor/laravel/sail/runtimes/8.2
             dockerfile: Dockerfile
             args:
                 WWWGROUP: '${WWWGROUP}'
         image: sail-8.2/app
-        container_name: idez-api
         extra_hosts:
             - 'host.docker.internal:host-gateway'
         ports:
