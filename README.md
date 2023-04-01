@@ -33,7 +33,7 @@ Este projeto foi implementado usando o framework Laravel.
 O mesmo roda sobre containers usando docker.
 
 > É indispensável possuir as ferramentas [docker compose](https://docs.docker.com/compose/install/) e
-> [composer](https://getcomposer.org/doc/00-intro.md#installation-linux-unix-macos) instaladas em sua > máquina.
+> [composer](https://getcomposer.org/doc/00-intro.md#installation-linux-unix-macos) instaladas em sua máquina.
 
 ### Dev environment ###
 
