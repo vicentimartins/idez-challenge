@@ -5,15 +5,15 @@ relação a implementação de código implementada pelo mesmo.
 
 ## Requisitos ##
 
-* Criar uma rota para pesquisar e listar os municípios de uma UF.
-* Resposta da requisição deve conter, uma lista de municípios com os seguintes campos:
+* [ok] Criar uma rota para pesquisar e listar os municípios de uma UF.
+* [ok] Resposta da requisição deve conter, uma lista de municípios com os seguintes campos:
   * **name**: Nome do município.
   * **ibge_code**: Código IBGE desse município.
-* Deve ser utilizado como providers as seguintes APIs:
+* [ok] Deve ser utilizado como providers as seguintes APIs:
   * **Brasil API**: https://brasilapi.com.br/api/ibge/municipios/v1/RS
   * **IBGE**: https://servicodados.ibge.gov.br/api/v1/localidades/estados/rs/municipios
-* O provider usado deve ser definido via variável de ambiente.
-* Deve conter testes unitários e de integração.
+* [ok] O provider usado deve ser definido via variável de ambiente.
+* [ok] Deve conter testes unitários e de integração.
 
 ### Bônus ###
 * Uso de Cache.

@@ -16,7 +16,7 @@ class MunicipioController extends Controller
     public function __invoke(UFRequest $request): JsonResponse
     {
         $input = $request->safe();
-        $data = $this->municipioService->buscarMunicipioDaUf($input->uf);
+        $data = $this->municipioService->buscarMunicipioUf($input->uf);
 
         return response()
             ->json($data);

@@ -2,13 +2,11 @@
 
 namespace Tests\Feature;
 
-use App\Services\MunicipioService;
 use Generator;
-use Illuminate\Support\Facades\App;
-use Illuminate\Testing\AssertableJsonString;
+use Illuminate\Http\Response;
 use Illuminate\Testing\Fluent\AssertableJson;
-use Tests\TestCase;
 use PHPUnit\Framework\Attributes\DataProvider;
+use Tests\TestCase;
 
 class MunicipioControllerTest extends TestCase
 {
@@ -27,7 +25,7 @@ class MunicipioControllerTest extends TestCase
             fn (AssertableJson $assert) =>
             $assert->first(
                 fn (AssertableJson $assert) =>
-                $assert->hasAll(['nome', 'codigo_ibge'])
+                $assert->hasAll(['name', 'ibge_code'])
             )
         );
     }
@@ -36,17 +34,17 @@ class MunicipioControllerTest extends TestCase
     {
         yield [
             'uf' => 'pb',
-            'codigoHttp' => 200,
+            'codigoHttp' => Response::HTTP_OK,
         ];
 
         yield [
             'uf' => 'RS',
-            'codigoHttp' => 200,
+            'codigoHttp' => Response::HTTP_OK,
         ];
 
         yield [
             'uf' => 'foo',
-            'codigoHttp' => 422,
+            'codigoHttp' => Response::HTTP_UNPROCESSABLE_ENTITY,
         ];
     }
 }

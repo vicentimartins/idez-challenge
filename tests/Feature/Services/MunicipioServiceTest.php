@@ -3,10 +3,12 @@
 namespace Tests\Feature\Services;
 
 use App\Services\MunicipioService;
+use App\Exceptions\ProvedorIndisponivelException;
+use Generator;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Http;
+use PHPUnit\Framework\Attributes\DataProvider;
 use Tests\TestCase;
-use App\Exceptions\ProvedorIndisponivelException;
 
 class MunicipioServiceTest extends TestCase
 {
@@ -19,27 +21,24 @@ class MunicipioServiceTest extends TestCase
         $this->service = App::make(MunicipioService::class);
     }
 
-    public function test_provider_retorna_sucesso(): void
-    {
-        $uf = 'pb';
-        $data = json_decode(
-            file_get_contents(
-                sprintf('%s/../../Fixtures/municipios_pb.json', __DIR__)
-            ),
-            true
-        );
-
-        $response = response()->json($data);
+    #[DataProvider('provedorDadosProvider')]
+    public function test_busca_dados_retorna_sucesso(
+        string $fixture,
+        string $provedorUrl
+    ): void {
+        $data = file_get_contents($fixture);
 
         Http::fake(
             [
-                sprintf('https://brasilapi.com.br/api/ibge/municipios/v1/%s', $uf) => $response
+                $provedorUrl => Http::response($data),
             ]
         );
 
-        $atual = $this->service->buscarMunicipioDaUf($uf);
+        $atual = $this->service->buscarMunicipioUf('pb');
 
-        $this->assertSame($data, $atual);
+        $this->assertArrayHasKey('ibge_code', current($atual));
+        $this->assertArrayHasKey('name', current($atual));
+        $this->assertArrayNotHasKey('microrregiao', current($atual));
     }
 
     public function test_provider_incomunicavel_ou_inexistente(): void
@@ -47,6 +46,19 @@ class MunicipioServiceTest extends TestCase
         $this->expectException(ProvedorIndisponivelException::class);
         $this->expectExceptionMessage("Provedor dos dados indisponível no momento");
 
-        $this->service->buscarMunicipioDaUf('foo');
+        $this->service->buscarMunicipioUf('foo');
+    }
+
+    public static function provedorDadosProvider(): Generator
+    {
+        yield 'Caso em que Brasil api é o provedor.' => [
+            sprintf('%s/../../Fixtures/municipios_pb.json', __DIR__),
+            'https://brasilapi.com.br/*'
+        ];
+
+        yield 'Caso em que ibge é o provedor.' => [
+            sprintf('%s/../../Fixtures/municipios_pb_ibge.json', __DIR__),
+            'https://*.ibge.gov.br/*'
+        ];
     }
 }
