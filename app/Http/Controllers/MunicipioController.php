@@ -33,21 +33,21 @@ class MunicipioController extends Controller
 
         $this->municipioService->buscarMunicipioUf($input['uf']);
 
-
         $municipio = new Municipio();
         $query =  $municipio->where(fn () => $municipio->ufs->where('name', $input['uf']))
             ->paginate(columns: ['name', 'ibge_code']);
 
-        Redis::set($this->gerarChaveCache($input['uf'], $input['page']), $query->toJson());
+        Redis::set($this->gerarChaveCache($input['uf'], $input['page'] ?? null), $query->toJson());
 
         return MunicipioResource::collection($query);
     }
 
     private function gerarChaveCache(string $uf, ?int $page = null): string
     {
-        if (!$page) {
-            return sprintf('%s_UF_%s', env('PROVEDOR_DADOS'), $uf);
-        }
-        return sprintf('%s_UF_%s_page_%d', env('PROVEDOR_DADOS'), $uf, $page);
+        return sprintf(
+            '_UF_%s_page_%d',
+            $uf,
+            $page === null ? 0 : $page
+        );
     }
 }
