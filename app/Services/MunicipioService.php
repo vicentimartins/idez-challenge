@@ -4,10 +4,11 @@ namespace App\Services;
 
 use App\Contracts\IProvedor;
 use App\Exceptions\ProvedorIndisponivelException;
+use App\Models\Municipio;
+use App\Models\Uf;
 use Generator;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Http;
-use Illuminate\Support\Facades\Redis;
 
 class MunicipioService
 {
@@ -15,7 +16,7 @@ class MunicipioService
     {
     }
 
-    public function buscarMunicipioUf(string $uf): array
+    public function buscarMunicipioUf(string $uf): void
     {
         $response = Http::get(
             sprintf($this->definirProvedor(), strtoupper($uf))
@@ -28,14 +29,31 @@ class MunicipioService
             );
         }
 
-        $resultado = $this->provedorDadosService->processarRetorno($response);
-
-        Redis::set(
-            sprintf('%s_UF_%s', env('PROVEDOR_DADOS'), $uf),
-            json_encode($resultado)
+        $this->relacionarMunicipioUf(
+            $this->provedorDadosService->processarRetorno($response),
+            strtoupper($uf)
         );
+    }
 
-        return $resultado;
+    private function relacionarMunicipioUf(array $municipios, $uf): void
+    {
+        $uf = Uf::whereName($uf)->first() ?? Uf::create(['name' => $uf]);
+        $municipioModel = new Municipio();
+
+        foreach ($municipios as $municipio) {
+            if (!$municipioDb = $municipioModel->find($municipio['ibge_code'])) {
+                $municipioDb = $municipioModel->create(
+                    [
+                        'name' => $municipio['name'],
+                        'ibge_code' => $municipio['ibge_code'],
+
+                    ]
+                );
+            }
+
+            $uf->municipios()
+                ->attach($municipioDb->id);
+        }
     }
 
     private function definirProvedor(): string
