@@ -3,8 +3,10 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\UFRequest;
+use App\Http\Resources\MunicipioResource;
+use App\Models\Municipio;
 use App\Services\MunicipioService;
-use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Redis;
 
 class MunicipioController extends Controller
@@ -14,28 +16,38 @@ class MunicipioController extends Controller
     ) {
     }
 
-    public function __invoke(UFRequest $request): JsonResponse
+    public function __invoke(UFRequest $request)
     {
-
-        $input = $request->safe();
+        $input = $request->all();
 
         $municipiosCache = Redis::get(
-            sprintf(
-                '%s_UF_%s',
-                env('REDIS_PREFIX'),
-                $input->uf
+            $this->gerarChaveCache(
+                $input['uf'],
+                $input['page'] ?? null
             )
         );
 
         if (!empty($municipiosCache)) {
-            return response()
-                ->json(json_decode($municipiosCache, true));
+            return json_decode($municipiosCache, true);
         }
 
-        $data = $this->municipioService->buscarMunicipioUf($input->uf);
+        $this->municipioService->buscarMunicipioUf($input['uf']);
 
 
-        return response()
-            ->json($data);
+        $municipio = new Municipio();
+        $query =  $municipio->where(fn () => $municipio->ufs->where('name', $input['uf']))
+            ->paginate(columns: ['name', 'ibge_code']);
+
+        Redis::set($this->gerarChaveCache($input['uf'], $input['page']), $query->toJson());
+
+        return MunicipioResource::collection($query);
+    }
+
+    private function gerarChaveCache(string $uf, ?int $page = null): string
+    {
+        if (!$page) {
+            return sprintf('%s_UF_%s', env('PROVEDOR_DADOS'), $uf);
+        }
+        return sprintf('%s_UF_%s_page_%d', env('PROVEDOR_DADOS'), $uf, $page);
     }
 }
