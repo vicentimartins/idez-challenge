@@ -43,10 +43,29 @@ Crie um clone deste repositório em seu ambiente local
 git clone git@github.com:vicentimartins/idez-challenge.git
 ```
 
+
 Copie o arquivo de variáveis de ambiente para criar um para o ambiente que está sendo levantado
 
 ```bash
 cp .env.example .env
+```
+
+Criar o arquivo de banco de dados para a aplicação
+
+```bash
+touch ./database/municipios.sqlite
+```
+
+Caso não possua a versão solicitada pelo projeto para executar os comandos listados neste gui, você pode usar
+este container para o startup do projeto:
+
+```bash
+docker run --rm \
+    -u "$(id -u):$(id -g)" \
+    -v "$(pwd):/var/www/html" \
+    -w /var/www/html \
+    laravelsail/php82-composer:latest \
+    composer install --ignore-platform-reqs
 ```
 
 Instale as dependências do projeto usando o composer a partir do diretório **idez-challenge**
@@ -59,6 +78,12 @@ Levante os containers
 
 ```bash
 vendor/bin/sail up -d
+```
+
+Agora execute os scripts de migração
+
+```bash
+vendor/bin/sail artisan migrate
 ```
 
 Pronto! Seu projeto está disponível para alterações.
@@ -89,10 +114,7 @@ Para fazer uma requisição, basta rodar o comando após colocar o ambiente em f
 Exemplo:
 
 ```bash
-curl --location 'http://127.0.0.1/api/municipios?page=1' \
---data '{
-    "uf": "rs"
-}'
+curl --location 'http://localhost/api/municipios?page=1' --data '{"uf": "rs"}'
 ```
 
 A UF não precisa estar em caixa alta (letras maiúsculas). A paginação é feita de forma automática
