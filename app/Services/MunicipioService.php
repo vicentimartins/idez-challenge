@@ -53,8 +53,8 @@ class MunicipioService
         $retorno = json_decode($retorno, true);
         $resultado = [];
 
-        foreach ($this->processarDadosIbge($retorno) as $key => $value) {
-            $resultado[$key] = $value;
+        foreach ($this->processarDadosIbge($retorno) as $municipio) {
+            $resultado[] = $municipio;
         }
 
         return $resultado;
@@ -82,7 +82,7 @@ class MunicipioService
         $resultado = [];
 
         foreach ($retorno as $municipios) {
-            foreach ($municipios as $key => $value) {
+            array_walk($municipios, function ($value, $key) use (&$resultado) {
                 if ('nome' === $key) {
                     $resultado['name'] = $value;
                 };
@@ -90,9 +90,7 @@ class MunicipioService
                 if ('id' === $key) {
                     $resultado['ibge_code'] = $value;
                 };
-
-                continue;
-            }
+            });
 
             krsort($resultado);
 
