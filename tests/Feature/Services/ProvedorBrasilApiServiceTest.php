@@ -45,7 +45,7 @@ class ProvedorBrasilApiServiceTest extends TestCase
         $this->assertArrayNotHasKey('mesorregiao', current($atual));
     }
 
-    public function validaRequisicaoProvider(): Generator
+    public static function validaRequisicaoProvider(): Generator
     {
         yield 'Caso em que a validação retorna verdadeiro.' => [
             'esperado' => true,

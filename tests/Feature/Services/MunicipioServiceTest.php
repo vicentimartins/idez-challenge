@@ -5,6 +5,8 @@ namespace Tests\Feature\Services;
 use App\Services\MunicipioService;
 use App\Exceptions\ProvedorIndisponivelException;
 use Generator;
+use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Http\Client\Response;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Http;
 use PHPUnit\Framework\Attributes\DataProvider;
@@ -12,6 +14,8 @@ use Tests\TestCase;
 
 class MunicipioServiceTest extends TestCase
 {
+    use RefreshDatabase;
+
     private MunicipioService $service;
 
     public function setUp(): void
@@ -26,19 +30,19 @@ class MunicipioServiceTest extends TestCase
         string $fixture,
         string $provedorUrl
     ): void {
+        $this->assertDatabaseEmpty('municipios');
+        $this->assertDatabaseEmpty('ufs');
+
         $data = file_get_contents($fixture);
 
-        Http::fake(
-            [
-                $provedorUrl => Http::response($data),
-            ]
-        );
+        Http::fake([
+            $provedorUrl => Http::response($data)
+        ]);
 
-        $atual = $this->service->buscarMunicipioUf('pb');
+        $this->service->buscarMunicipioUf('pb');
 
-        $this->assertArrayHasKey('ibge_code', current($atual));
-        $this->assertArrayHasKey('name', current($atual));
-        $this->assertArrayNotHasKey('microrregiao', current($atual));
+        $this->assertDatabaseCount('municipios', 223);
+        $this->assertDatabaseCount('ufs', 1);
     }
 
     public function test_provider_incomunicavel_ou_inexistente(): void
